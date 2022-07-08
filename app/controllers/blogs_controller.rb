@@ -36,7 +36,9 @@ class BlogsController < ApplicationController
   end
 
   def update
-    if @blog.update(blog_params)
+    if !@blog.owned_by?(current_user)
+      raise ActiveRecord::RecordNotFound
+    elsif @blog.update(blog_params)
       redirect_to blog_url(@blog), notice: 'Blog was successfully updated.'
     else
       render :edit, status: :unprocessable_entity
