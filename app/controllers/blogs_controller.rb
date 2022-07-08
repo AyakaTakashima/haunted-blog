@@ -40,9 +40,13 @@ class BlogsController < ApplicationController
   end
 
   def destroy
-    @blog.destroy!
-
-    redirect_to blogs_url, notice: 'Blog was successfully destroyed.', status: :see_other
+    if @blog.owned_by?(current_user)
+      @blog.destroy!
+  
+      redirect_to blogs_url, notice: 'Blog was successfully destroyed.', status: :see_other
+    else
+      raise ActiveRecord::RecordNotFound
+    end
   end
 
   private
@@ -51,11 +55,7 @@ class BlogsController < ApplicationController
     if current_user.nil?
       @blog = Blog.where(secret: false).find(params[:id])
     else
-      #if Blog.find(params[:id]).secret
-      #  @blog = current_user.blogs.find(params[:id])
-      #else
-        @blog = Blog.find(params[:id])
-      #end
+      @blog = Blog.find(params[:id])
     end
   end
 
