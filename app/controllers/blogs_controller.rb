@@ -10,7 +10,7 @@ class BlogsController < ApplicationController
   end
 
   def show
-    raise ActiveRecord::RecordNotFound if !@blog.owned_by?(current_user)
+    raise ActiveRecord::RecordNotFound if @blog.secret? && !@blog.owned_by?(current_user)
   end
 
   def new
@@ -42,12 +42,12 @@ class BlogsController < ApplicationController
   end
 
   def destroy
-    if @blog.owned_by?(current_user)
+    if !@blog.owned_by?(current_user)
+      raise ActiveRecord::RecordNotFound
+    else
       @blog.destroy!
   
       redirect_to blogs_url, notice: 'Blog was successfully destroyed.', status: :see_other
-    else
-      raise ActiveRecord::RecordNotFound
     end
   end
 
@@ -65,7 +65,7 @@ class BlogsController < ApplicationController
     if current_user.premium?
       params.require(:blog).permit(:title, :content, :secret, :random_eyecatch)
     else
-      params.require(:blog).permit(:title, :content)
+      params.require(:blog).permit(:title, :content, :secret)
     end
   end
 end
