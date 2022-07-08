@@ -18,7 +18,7 @@ class BlogsController < ApplicationController
   end
 
   def edit
-    raise ActiveRecord::RecordNotFound if !@blog.owned_by?(current_user)
+    raise ActiveRecord::RecordNotFound unless @blog.owned_by?(current_user)
   end
 
   def create
@@ -32,9 +32,9 @@ class BlogsController < ApplicationController
   end
 
   def update
-    if !@blog.owned_by?(current_user)
-      raise ActiveRecord::RecordNotFound
-    elsif @blog.update(blog_params)
+    raise ActiveRecord::RecordNotFound unless @blog.owned_by?(current_user)
+
+    if @blog.update(blog_params)
       redirect_to blog_url(@blog), notice: 'Blog was successfully updated.'
     else
       render :edit, status: :unprocessable_entity
@@ -42,23 +42,21 @@ class BlogsController < ApplicationController
   end
 
   def destroy
-    if !@blog.owned_by?(current_user)
-      raise ActiveRecord::RecordNotFound
-    else
-      @blog.destroy!
-  
-      redirect_to blogs_url, notice: 'Blog was successfully destroyed.', status: :see_other
-    end
+    raise ActiveRecord::RecordNotFound unless @blog.owned_by?(current_user)
+
+    @blog.destroy!
+
+    redirect_to blogs_url, notice: 'Blog was successfully destroyed.', status: :see_other
   end
 
   private
 
   def set_blog
-    if current_user.nil?
-      @blog = Blog.where(secret: false).find(params[:id])
-    else
-      @blog = Blog.find(params[:id])
-    end
+    @blog = if current_user.nil?
+              Blog.where(secret: false).find(params[:id])
+            else
+              Blog.find(params[:id])
+            end
   end
 
   def blog_params
