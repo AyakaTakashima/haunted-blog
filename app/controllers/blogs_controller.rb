@@ -9,7 +9,11 @@ class BlogsController < ApplicationController
     @blogs = Blog.search(params[:term]).published.default_order
   end
 
-  def show; end
+  def show
+    if @blog.secret && !@blog.owned_by?(current_user)
+      raise ActiveRecord::RecordNotFound
+    end
+  end
 
   def new
     @blog = Blog.new
@@ -47,11 +51,11 @@ class BlogsController < ApplicationController
     if current_user.nil?
       @blog = Blog.where(secret: false).find(params[:id])
     else
-      if Blog.find(params[:id]).secret
-        @blog = current_user.blogs.find(params[:id])
-      else
+      #if Blog.find(params[:id]).secret
+      #  @blog = current_user.blogs.find(params[:id])
+      #else
         @blog = Blog.find(params[:id])
-      end
+      #end
     end
   end
 
