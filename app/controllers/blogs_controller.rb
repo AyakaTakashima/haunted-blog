@@ -10,9 +10,7 @@ class BlogsController < ApplicationController
   end
 
   def show
-    if @blog.secret && !@blog.owned_by?(current_user)
-      raise ActiveRecord::RecordNotFound
-    end
+    raise ActiveRecord::RecordNotFound if !@blog.owned_by?(current_user)
   end
 
   def new
@@ -20,9 +18,7 @@ class BlogsController < ApplicationController
   end
 
   def edit
-    if !@blog.owned_by?(current_user)
-      raise ActiveRecord::RecordNotFound
-    end
+    raise ActiveRecord::RecordNotFound if !@blog.owned_by?(current_user)
   end
 
   def create
@@ -66,6 +62,10 @@ class BlogsController < ApplicationController
   end
 
   def blog_params
-    params.require(:blog).permit(:title, :content, :secret, :random_eyecatch)
+    if current_user.premium?
+      params.require(:blog).permit(:title, :content, :secret, :random_eyecatch)
+    else
+      params.require(:blog).permit(:title, :content)
+    end
   end
 end
