@@ -3,23 +3,21 @@
 class BlogsController < ApplicationController
   skip_before_action :authenticate_user!, only: %i[index show]
 
-  before_action :set_blog, only: %i[show edit update destroy]
+  before_action :secret_blog, only: %i[show]
+  before_action :set_blog, only: %i[show]
+  before_action :varify_user, only: %i[edit update destroy]
 
   def index
     @blogs = Blog.search(params[:term]).published.default_order
   end
 
-  def show
-    raise ActiveRecord::RecordNotFound if @blog.secret? && !@blog.owned_by?(current_user)
-  end
+  def show;end
 
   def new
     @blog = Blog.new
   end
 
-  def edit
-    raise ActiveRecord::RecordNotFound unless @blog.owned_by?(current_user)
-  end
+  def edit;end
 
   def create
     @blog = current_user.blogs.new(blog_params)
@@ -32,8 +30,6 @@ class BlogsController < ApplicationController
   end
 
   def update
-    raise ActiveRecord::RecordNotFound unless @blog.owned_by?(current_user)
-
     if @blog.update(blog_params)
       redirect_to blog_url(@blog), notice: 'Blog was successfully updated.'
     else
@@ -42,8 +38,6 @@ class BlogsController < ApplicationController
   end
 
   def destroy
-    raise ActiveRecord::RecordNotFound unless @blog.owned_by?(current_user)
-
     @blog.destroy!
 
     redirect_to blogs_url, notice: 'Blog was successfully destroyed.', status: :see_other
@@ -51,12 +45,17 @@ class BlogsController < ApplicationController
 
   private
 
+  def varify_user
+    @blog = current_user.blogs.find(params[:id])
+  end
+
   def set_blog
-    @blog = if current_user.nil?
-              Blog.where(secret: false).find(params[:id])
-            else
-              Blog.find(params[:id])
-            end
+    @blog = Blog.find(params[:id])
+  end
+
+  def secret_blog
+    blog = Blog.find(params[:id])
+    params[:id] = nil if blog.secret? && !blog.owned_by?(current_user)
   end
 
   def blog_params
