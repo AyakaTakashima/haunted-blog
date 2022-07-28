@@ -5,7 +5,7 @@ class BlogsController < ApplicationController
 
   before_action :secret_blog, only: %i[show]
   before_action :set_blog, only: %i[show]
-  before_action :varify_user, only: %i[edit update destroy]
+  before_action :verify_user, only: %i[edit update destroy]
 
   def index
     @blogs = Blog.search(params[:term]).published.default_order
@@ -45,7 +45,7 @@ class BlogsController < ApplicationController
 
   private
 
-  def varify_user
+  def verify_user
     @blog = current_user.blogs.find(params[:id])
   end
 
