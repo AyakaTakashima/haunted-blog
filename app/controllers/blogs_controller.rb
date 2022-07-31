@@ -11,10 +11,10 @@ class BlogsController < ApplicationController
 
   def show
     blog = Blog.find(params[:id])
-    if blog.secret? && !blog.owned_by?(current_user)
+    if !blog.owned_by?(current_user)
       @blog = Blog.published.find(params[:id])
     else
-      @blog = blog
+      @blog = Blog.my_blog(current_user).find(params[:id])
     end
   end
 
