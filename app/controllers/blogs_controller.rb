@@ -10,7 +10,7 @@ class BlogsController < ApplicationController
   end
 
   def show
-    @blog = Blog.viwable(current_user).find(params[:id])
+    @blog = Blog.viewable(current_user).find(params[:id])
   end
 
   def new

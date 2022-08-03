@@ -19,7 +19,7 @@ class Blog < ApplicationRecord
     user == target_user
   end
 
-  scope :viwable, -> (current_user){
+  scope :viewable, -> (current_user){
     Blog.where('secret = FALSE').or(Blog.where(user_id: current_user))
   }
 end
